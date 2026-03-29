@@ -177,48 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loadWishes();
     });
 
-    // --- Guest Migration & Seeding ---
-    
-    // Function to seed guests from the old guests.js to Firestore
-    window.seedGuestsToFirebase = async function() {
-        if (typeof dummyGuests === 'undefined') {
-            alert('Gagal: guests.js tidak ditemukan atau sudah dihapus.');
-            return;
-        }
-        
-        console.log("Seeding guests...");
-        const batch = db.batch();
-        
-        for (const guestName of dummyGuests) {
-            const docRef = db.collection('guests').doc(guestName.toLowerCase().replace(/\s+/g, '-'));
-            batch.set(docRef, { name: guestName });
-        }
-        
-        try {
-            await batch.commit();
-            alert('Sukses! Semua nama dari guests.js telah dipindah ke Firebase.');
-            seedBtn.style.display = 'none'; // Hide after success
-        } catch (error) {
-            console.error("Error seeding guests: ", error);
-            alert('Gagal memindah nama: ' + error.message);
-        }
-    };
-
-    // Add a temporary seeding button to the UI
-    const seedBtn = document.createElement('div');
-    seedBtn.innerHTML = "🚀 Pindah Nama Guest ke Firebase";
-    seedBtn.style.position = 'fixed';
-    seedBtn.style.bottom = '50px';
-    seedBtn.style.left = '10px';
-    seedBtn.style.background = '#01928B';
-    seedBtn.style.color = '#fff';
-    seedBtn.style.padding = '8px 12px';
-    seedBtn.style.borderRadius = '5px';
-    seedBtn.style.fontSize = '12px';
-    seedBtn.style.cursor = 'pointer';
-    seedBtn.style.zIndex = '100000';
-    seedBtn.onclick = seedGuestsToFirebase;
-    document.body.appendChild(seedBtn);
 
     // Final fix: Hide the unwanted "Busted!" text if it appears
     const findAndHideBusted = () => {
