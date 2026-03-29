@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            if (!window.isGuestAuthorized) {
+                alert('Minta maaf, fitur RSVP dan Ucapan hanya tersedia untuk tamu undangan yang terdaftar.');
+                return;
+            }
             const name = document.getElementById('author').value;
             const wish = document.getElementById('saic-textarea-504761').value;
             const attendance = document.getElementById('attendance').value;
@@ -54,6 +58,19 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadWishes() {
         const container = document.getElementById('saic-container-comment-504761');
         if (!container) return;
+
+        if (!window.isGuestAuthorized) {
+            container.innerHTML = '<li class="saic-item-comment" style="text-align:center; color:#6B3A19;"><strong>Khusus Undangan</strong><br>Fitur ini hanya dapat diakses oleh tamu yang terdaftar.</li>';
+            // Also hide the form if unauthorized
+            const formContainer = document.getElementById('commentform-504761');
+            if (formContainer) {
+                formContainer.style.opacity = '0.5';
+                formContainer.style.pointerEvents = 'none'; // Disable interaction
+                const submitBtn = formContainer.querySelector('input[type="submit"]');
+                if (submitBtn) submitBtn.style.display = 'none';
+            }
+            return;
+        }
 
         try {
             const querySnapshot = await db.collection('responses')
@@ -153,7 +170,55 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 
     loadWishes();
-    setInterval(loadWishes, 5000); // Auto-refresh every 5 seconds
+    setInterval(loadWishes, 10000); // Auto-refresh every 10 seconds (optimized)
+
+    // Listen for auth completion to refresh wishes
+    document.addEventListener('guestAuthCompleted', function(e) {
+        loadWishes();
+    });
+
+    // --- Guest Migration & Seeding ---
+    
+    // Function to seed guests from the old guests.js to Firestore
+    window.seedGuestsToFirebase = async function() {
+        if (typeof dummyGuests === 'undefined') {
+            alert('Gagal: guests.js tidak ditemukan atau sudah dihapus.');
+            return;
+        }
+        
+        console.log("Seeding guests...");
+        const batch = db.batch();
+        
+        for (const guestName of dummyGuests) {
+            const docRef = db.collection('guests').doc(guestName.toLowerCase().replace(/\s+/g, '-'));
+            batch.set(docRef, { name: guestName });
+        }
+        
+        try {
+            await batch.commit();
+            alert('Sukses! Semua nama dari guests.js telah dipindah ke Firebase.');
+            seedBtn.style.display = 'none'; // Hide after success
+        } catch (error) {
+            console.error("Error seeding guests: ", error);
+            alert('Gagal memindah nama: ' + error.message);
+        }
+    };
+
+    // Add a temporary seeding button to the UI
+    const seedBtn = document.createElement('div');
+    seedBtn.innerHTML = "🚀 Pindah Nama Guest ke Firebase";
+    seedBtn.style.position = 'fixed';
+    seedBtn.style.bottom = '50px';
+    seedBtn.style.left = '10px';
+    seedBtn.style.background = '#01928B';
+    seedBtn.style.color = '#fff';
+    seedBtn.style.padding = '8px 12px';
+    seedBtn.style.borderRadius = '5px';
+    seedBtn.style.fontSize = '12px';
+    seedBtn.style.cursor = 'pointer';
+    seedBtn.style.zIndex = '100000';
+    seedBtn.onclick = seedGuestsToFirebase;
+    document.body.appendChild(seedBtn);
 
     // Final fix: Hide the unwanted "Busted!" text if it appears
     const findAndHideBusted = () => {
