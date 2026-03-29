@@ -125,30 +125,47 @@ document.addEventListener('DOMContentLoaded', function() {
     // Ensure buttons correctly trigger the popup (custom override if needed)
     // Most templates use an ID or data-attribute for popup triggers.
     // If the "Lihat Ucapan" button doesn't open the popup naturally, we can help it.
-    const openPopup = () => {
-        const popup = document.getElementById('popup-ucapan');
-        if (popup) {
-            popup.style.display = 'block'; // Or whatever class/style the template uses
-            popup.classList.add('active'); // Example
-        }
-    };
-
-    const btnLihatInPopup = document.getElementById('btn-lihat-ucapan');
-    if (btnLihatInPopup) {
-        // Since it's already in the popup, we can just make it hidden or use it for "Refresh"
-        btnLihatInPopup.style.display = 'none'; 
-    }
-
-    const btnLihatInMenu = document.getElementById('btnucapan');
-    if (btnLihatInMenu) {
-        btnLihatInMenu.addEventListener('click', () => {
-             loadWishes();
-        });
-    }
-
-    // Add some basic styling for the wishes items via JS to avoid CSS file edits
+    // Modal Style for Popups to keep them centered and fixed
     const style = document.createElement('style');
     style.innerHTML = `
+        #popup-ucapan, #popup-gift, #popup-data-mempelai, #popup-data-acara, #popup-love-story, #popup-galeri, #popup-dresscode {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 99999 !important;
+            background: rgba(0,0,0,0) !important;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+            transition: opacity 0.5s ease;
+        }
+        #popup-ucapan.popup-show, #popup-gift.popup-show, #popup-data-mempelai.popup-show, #popup-data-acara.popup-show, #popup-love-story.popup-show, #popup-galeri.popup-show, #popup-dresscode.popup-show {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+        #inner-popup-ucapan, #inner-popup-gift, #inner-popup-data-mempelai, #inner-popup-data-acara, #inner-popup-love-story, #inner-popup-galeri, #inner-popup-dresscode {
+            width: 90% !important;
+            max-width: 350px !important;
+            height: auto !important;
+            max-height: 85vh !important;
+            overflow-y: auto !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-radius: 20px !important;
+            position: relative !important;
+            padding: 0 !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+            border: 2px solid #ddd;
+        }
+        .btnclose {
+            cursor: pointer !important;
+        }
         .saic-item-comment {
             list-style: none;
             margin-bottom: 15px;
@@ -166,17 +183,118 @@ document.addEventListener('DOMContentLoaded', function() {
             margin: 0;
             line-height: 1.4;
         }
+        /* Lock background scroll */
+        body.popup-active {
+            overflow: hidden !important;
+            height: 100vh !important;
+        }
     `;
     document.head.appendChild(style);
 
+    const openPopup = (popupId) => {
+        const popup = document.getElementById(popupId);
+        if (popup) {
+            popup.style.display = 'flex';
+            popup.classList.remove('popup-hide');
+            popup.classList.add('popup-show');
+            document.body.classList.add('popup-active');
+        }
+    };
+
+    const closePopup = (popup) => {
+        if (popup) {
+            popup.classList.remove('popup-show');
+            popup.classList.add('popup-hide');
+            setTimeout(() => {
+                popup.style.display = 'none';
+                if (!document.querySelector('.popup-show')) {
+                    document.body.classList.remove('popup-active');
+                }
+            }, 500);
+        }
+    };
+
+    // Handle all Close Buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btnclose')) {
+            const popup = e.target.closest('#popup-ucapan') || 
+                          e.target.closest('#popup-gift') || 
+                          e.target.closest('#popup-info') || 
+                          e.target.closest('#popup-data-mempelai') || 
+                          e.target.closest('#popup-data-acara') || 
+                          e.target.closest('#popup-love-story') || 
+                          e.target.closest('#popup-galeri') || 
+                          e.target.closest('#popup-dresscode');
+            if (popup) {
+                closePopup(popup);
+            }
+        }
+    });
+
+    const btnLihatInMenu = document.getElementById('btnucapan');
+    if (btnLihatInMenu) {
+        btnLihatInMenu.addEventListener('click', (e) => {
+             e.preventDefault();
+             openPopup('popup-ucapan');
+             loadWishes();
+        });
+    }
+
+    const btnGiftInMenu = document.getElementById('btngift');
+    const btnGiftOnPage = document.getElementById('btn_gift');
+    if (btnGiftInMenu) {
+        btnGiftInMenu.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPopup('popup-gift');
+        });
+    }
+    if (btnGiftOnPage) {
+        btnGiftOnPage.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPopup('popup-gift');
+        });
+    }
+
+    const btnLihatOnPage = document.getElementById('btn-lihat-ucapan');
+    if (btnLihatOnPage) {
+        btnLihatOnPage.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPopup('popup-ucapan');
+            loadWishes();
+        });
+    }
+
+    // Interactive Section Triggers (Using data-id from Elementor)
+    const interactiveTriggers = {
+        '2338873a': 'popup-data-mempelai',
+        '6ff53af3': 'popup-data-acara',
+        '12c13d7e': 'popup-dresscode',
+        '23a230b2': 'popup-love-story',
+        '2395e1e2': 'popup-galeri',
+        '5de7e69e': 'popup-gift',
+        '6c616cfa': 'popup-ucapan'
+    };
+
+    Object.keys(interactiveTriggers).forEach(id => {
+        const el = document.querySelector(`[data-id="${id}"]`);
+        if (el) {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                const popupId = interactiveTriggers[id];
+                openPopup(popupId);
+                if (popupId === 'popup-ucapan') loadWishes();
+            });
+        }
+    });
+
     loadWishes();
-    setInterval(loadWishes, 10000); // Auto-refresh every 10 seconds (optimized)
+    setInterval(loadWishes, 10000); // Auto-refresh every 10 seconds
 
     // Listen for auth completion to refresh wishes
     document.addEventListener('guestAuthCompleted', function(e) {
         loadWishes();
     });
-
 
     // Final fix: Hide the unwanted "Busted!" text if it appears
     const findAndHideBusted = () => {
@@ -189,5 +307,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     findAndHideBusted();
-    setTimeout(findAndHideBusted, 2000); // Run again after a delay to catch late-loading scripts
+    setTimeout(findAndHideBusted, 2000);
 });
