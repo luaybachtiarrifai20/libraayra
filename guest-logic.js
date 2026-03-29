@@ -3,13 +3,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const guestName = urlParams.get('to');
     const guestElement = document.getElementById('guest-name');
     
+    const qrContainer = document.getElementById('guest-qr-code');
+    let qrcode = null;
+
+    function generateQRCode(text) {
+        console.log("Generating QR Code for: [" + text + "]");
+        if (!qrContainer) {
+            console.error("QR Container #guest-qr-code not found!");
+            return;
+        }
+        
+        // Clear previous QR code
+        qrContainer.innerHTML = "";
+        
+        if (text && text.trim() !== "") {
+            try {
+                qrcode = new QRCode(qrContainer, {
+                    text: text,
+                    width: 200,
+                    height: 200,
+                    colorDark : "#6B3A19",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                document.getElementById('qr-instruction').style.display = 'block';
+                console.log("QR Code generated successfully.");
+            } catch (e) {
+                console.error("Error generating QR Code:", e);
+                // Fallback to static image on error
+                qrContainer.innerHTML = '<img src="./assets/qr_code.png" style="width: 200px; height: 200px;" alt="QR Code">';
+            }
+        } else {
+            // Show the user provided qr_code.png as fallback
+            qrContainer.innerHTML = '<img src="./assets/qr_code.png" style="width: 200px; height: 200px;" alt="QR Code">';
+            document.getElementById('qr-instruction').style.display = 'none';
+            console.log("Empty text, showing fallback QR image.");
+        }
+    }
+
     if (guestElement) {
         if (guestName) {
-            // Display name from URL
-            guestElement.textContent = decodeURIComponent(guestName.replace(/\+/g, ' '));
+            const decodedName = decodeURIComponent(guestName.replace(/\+/g, ' ')).trim();
+            // Check if name is in the list (case insensitive)
+            const isAuthorized = dummyGuests.some(name => name.trim().toLowerCase() === decodedName.toLowerCase());
+            
+            if (isAuthorized) {
+                guestElement.textContent = decodedName;
+                generateQRCode(decodedName);
+            } else {
+                guestElement.textContent = ""; // Clear if not in list
+                generateQRCode("");
+                console.log("Unauthorized guest: " + decodedName);
+            }
         } else {
             // Empty if no URL param
             guestElement.textContent = ""; 
+            generateQRCode("");
             
             // Still log test URLs for the user
             console.log("No guest name in URL. Emptying guest name.");
@@ -42,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const nextName = dummyGuests[dummyIndex % dummyGuests.length];
             if (guestElement) {
                 guestElement.textContent = nextName;
+                generateQRCode(nextName);
                 console.log("Testing dummy name: " + nextName);
             }
             dummyIndex++;

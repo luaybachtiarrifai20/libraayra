@@ -1,4 +1,5 @@
 const dummyGuests = [
+    "Dedi",
     "Bapak Budi Santoso",
     "Ibu Siti Aminah",
     "Sahabat & Kerabat",
