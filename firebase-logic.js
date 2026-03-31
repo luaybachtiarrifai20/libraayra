@@ -164,59 +164,92 @@ document.addEventListener('DOMContentLoaded', function() {
             border: 2px solid #ddd;
         }
 
-        /* Interactive Menu Relocated Buttons */
+        /* Interactive Menu Relocated Buttons - Left Side */
+        #btninfo, #btn-lihat-ucapan {
+            position: fixed !important;
+            left: 20px !important;
+            z-index: 10000 !important;
+            width: auto !important;
+            pointer-events: auto !important;
+        }
+
+        #btn-lihat-ucapan a {
+            display: flex !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        #btninfo {
+            bottom: 25px !important;
+        }
+
+        #btn-lihat-ucapan {
+            bottom: 85px !important;
+        }
+
+        #btninfo .elementor-icon, #btn-lihat-ucapan .elementor-button, 
+        #neonbtnon, #neonbtnoff, #unmute-sound, #mute-sound {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+            border: 2px solid #BC140B !important;
+            color: #BC140B !important;
+            transition: all 0.3s ease !important;
+            width: 45px !important;
+            height: 45px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+        }
+
+        #btn-lihat-ucapan .elementor-button {
+            width: auto !important;
+            padding: 10px 15px !important;
+            border-radius: 25px !important;
+            gap: 8px !important;
+        }
+
+        #neonbtnon .elementor-icon, #neonbtnoff .elementor-icon, 
+        #unmute-sound .elementor-icon, #mute-sound .elementor-icon,
+        #btninfo .elementor-icon {
+            font-size: 20px !important;
+            color: #BC140B !important;
+            line-height: 1 !important;
+            background: none !important;
+            border: none !important;
+            margin: 0 !important;
+        }
+
+        #btn-lihat-ucapan .elementor-button-icon i {
+            color: #BC140B !important;
+            font-size: 18px !important;
+        }
+
+        #btn-lihat-ucapan .elementor-button-text {
+            color: #BC140B !important;
+            font-weight: bold !important;
+            text-shadow: none !important;
+            font-size: 14px !important;
+            white-space: nowrap !important;
+        }
+
+        /* Right Side Buttons */
         .elementor-element-light-toggle, .elementor-element-music-toggle {
             position: fixed !important;
-            bottom: 30px !important;
+            right: 20px !important;
             z-index: 10000 !important;
             width: auto !important;
         }
 
         .elementor-element-light-toggle {
-            right: 20px !important;
             bottom: 85px !important;
         }
 
         .elementor-element-music-toggle {
-            right: 20px !important;
             bottom: 25px !important;
         }
-        
-        #neonbtnon, #neonbtnoff, #unmute-sound, #mute-sound {
-            position: relative !important;
-            bottom: auto !important;
-            right: auto !important;
-            width: 45px !important;
-            height: 45px !important;
-            border-radius: 50% !important;
-            background: rgba(255, 255, 255, 0.95) !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 10001 !important;
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
-            border: 2px solid #BC140B !important;
-            display: none; /* JS will toggle flex/none */
-        }
 
-        #neonbtnon .elementor-icon, #neonbtnoff .elementor-icon, #unmute-sound .elementor-icon, #mute-sound .elementor-icon {
-            font-size: 20px !important;
-            color: #BC140B !important;
-            line-height: 1 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-
-        #unmute-sound .elementor-icon, #mute-sound .elementor-icon {
-            width: 100% !important;
-            height: 100% !important;
-            background: none !important;
-            border: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
-        }
         .btnclose {
             cursor: pointer !important;
         }
@@ -237,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
             margin: 0;
             line-height: 1.4;
         }
+
         /* Lock background scroll */
         body.popup-active {
             overflow: hidden !important;
@@ -268,7 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Handle all Close Buttons
     document.addEventListener('click', function(e) {
         if (e.target.closest('.btnclose')) {
             const popup = e.target.closest('#popup-ucapan') || 
@@ -284,6 +317,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    const btnLihatOnPage = document.querySelector('#btn-lihat-ucapan a');
+    if (btnLihatOnPage) {
+        btnLihatOnPage.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openPopup('popup-ucapan');
+            loadWishes();
+        });
+    }
 
     const btnLihatInMenu = document.getElementById('btnucapan');
     if (btnLihatInMenu) {
@@ -314,13 +357,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const btnLihatOnPage = document.getElementById('btn-lihat-ucapan');
-    if (btnLihatOnPage) {
-        btnLihatOnPage.addEventListener('click', (e) => {
+    const btnInfoOnPage = document.getElementById('btninfo');
+    if (btnInfoOnPage) {
+        btnInfoOnPage.addEventListener('click', (e) => {
             e.preventDefault();
-            openPopup('popup-ucapan');
-            loadWishes();
-        });
+            e.stopImmediatePropagation();
+            openPopup('popup-info');
+        }, true); // Use capture phase to intercept before template JS
     }
 
     // Interactive Section Triggers (Using data-id from Elementor)
