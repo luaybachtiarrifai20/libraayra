@@ -163,6 +163,60 @@ document.addEventListener('DOMContentLoaded', function() {
             box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
             border: 2px solid #ddd;
         }
+
+        /* Interactive Menu Relocated Buttons */
+        .elementor-element-light-toggle, .elementor-element-music-toggle {
+            position: fixed !important;
+            bottom: 30px !important;
+            z-index: 10000 !important;
+            width: auto !important;
+        }
+
+        .elementor-element-light-toggle {
+            right: 20px !important;
+            bottom: 85px !important;
+        }
+
+        .elementor-element-music-toggle {
+            right: 20px !important;
+            bottom: 25px !important;
+        }
+        
+        #neonbtnon, #neonbtnoff, #unmute-sound, #mute-sound {
+            position: relative !important;
+            bottom: auto !important;
+            right: auto !important;
+            width: 45px !important;
+            height: 45px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 10001 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            border: 2px solid #BC140B !important;
+            display: none; /* JS will toggle flex/none */
+        }
+
+        #neonbtnon .elementor-icon, #neonbtnoff .elementor-icon, #unmute-sound .elementor-icon, #mute-sound .elementor-icon {
+            font-size: 20px !important;
+            color: #BC140B !important;
+            line-height: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        #unmute-sound .elementor-icon, #mute-sound .elementor-icon {
+            width: 100% !important;
+            height: 100% !important;
+            background: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
         .btnclose {
             cursor: pointer !important;
         }
@@ -251,7 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnGiftOnPage) {
         btnGiftOnPage.addEventListener('click', (e) => {
             e.preventDefault();
-            openPopup('popup-gift');
+            const secGift = document.getElementById('sec_gift');
+            if (secGift) {
+                secGift.scrollIntoView({ behavior: 'smooth' });
+                // If it's hidden by CSS, we might need to show it
+                secGift.style.display = 'block';
+            }
         });
     }
 
@@ -287,6 +346,87 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Light Toggle Logic
+    const neonOn = document.getElementById('neonbtnon');
+    const neonOff = document.getElementById('neonbtnoff');
+    if (neonOn && neonOff) {
+        neonOn.style.display = 'flex';
+        neonOff.style.display = 'none';
+
+        neonOn.addEventListener('click', () => {
+            neonOn.style.setProperty('display', 'none', 'important');
+            neonOff.style.setProperty('display', 'flex', 'important');
+        });
+        neonOff.addEventListener('click', () => {
+            neonOff.style.setProperty('display', 'none', 'important');
+            neonOn.style.setProperty('display', 'flex', 'important');
+        });
+    }
+
+    // Music Toggle logic is already handled by existing script using these IDs
+    // but we ensure they are displayed correctly
+    // Music Toggle logic
+    const unmuteBtn = document.getElementById('unmute-sound');
+    const muteBtn = document.getElementById('mute-sound');
+    const song = document.getElementById('song');
+
+    // Initial State: LIGHT ON, MUSIC ON
+    if (neonOn && neonOff) {
+        neonOn.style.setProperty('display', 'flex', 'important');
+        neonOff.style.setProperty('display', 'none', 'important');
+    }
+
+    const updateMusicUI = () => {
+        if (!song || !unmuteBtn || !muteBtn) return;
+        // The user wants it to look "ON" (playing) by default
+        // We show muteBtn (disc) by default if it's not explicitly paused
+        if (song.paused) {
+            unmuteBtn.style.setProperty('display', 'flex', 'important');
+            muteBtn.style.setProperty('display', 'none', 'important');
+        } else {
+            unmuteBtn.style.setProperty('display', 'none', 'important');
+            muteBtn.style.setProperty('display', 'flex', 'important');
+        }
+    };
+
+    // Force initial "ON" appearance for music if song exists
+    if (unmuteBtn && muteBtn) {
+        unmuteBtn.style.setProperty('display', 'none', 'important');
+        muteBtn.style.setProperty('display', 'flex', 'important');
+    }
+
+    const forceMusicUI = (isPlaying) => {
+        if (!unmuteBtn || !muteBtn) return;
+        if (isPlaying) {
+            unmuteBtn.style.setProperty('display', 'none', 'important');
+            muteBtn.style.setProperty('display', 'flex', 'important');
+        } else {
+            unmuteBtn.style.setProperty('display', 'flex', 'important');
+            muteBtn.style.setProperty('display', 'none', 'important');
+        }
+    };
+
+    if (unmuteBtn && muteBtn && song) {
+        unmuteBtn.addEventListener('click', () => {
+            isMutedByUser = false; 
+            if (typeof playAudio === 'function') {
+                playAudio(); // This handles play() AND volume fade-in
+            } else {
+                song.play();
+            }
+            forceMusicUI(true);
+        });
+        muteBtn.addEventListener('click', () => {
+            isMutedByUser = true;
+            song.pause();
+            if (typeof pauseAudio === 'function') pauseAudio(); // This handles volume fade-out
+            forceMusicUI(false);
+        });
+
+        // Initialize UI based on actual state
+        updateMusicUI();
+    }
 
     loadWishes();
     setInterval(loadWishes, 10000); // Auto-refresh every 10 seconds
