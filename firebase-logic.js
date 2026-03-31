@@ -168,7 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {
         #btninfo, #btn-lihat-ucapan {
             position: fixed !important;
             left: 20px !important;
-            z-index: 10000 !important;
+            bottom: auto !important;
+            top: auto !important;
+            z-index: 99999 !important;
             width: auto !important;
             pointer-events: auto !important;
         }
@@ -204,10 +206,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         #btn-lihat-ucapan .elementor-button {
-            width: auto !important;
-            padding: 10px 15px !important;
-            border-radius: 25px !important;
-            gap: 8px !important;
+            width: 45px !important;
+            height: 45px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        #btn-lihat-ucapan .elementor-button-text {
+            display: none !important;
         }
 
         #neonbtnon .elementor-icon, #neonbtnoff .elementor-icon, 
